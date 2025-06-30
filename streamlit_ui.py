@@ -105,8 +105,8 @@ async def run_agent_with_streaming(user_input: str):
 
 
 async def main():
-    st.title("Pydantic AI Agentic RAG")
-    st.write("Ask any question about Pydantic AI, the hidden truths of the beauty of this framework lie within.")
+    st.title("UO Computer Science LLM Agent")
+    st.write("Ask me questions about the University of Oregon Computer Science department!")
 
     # Initialize chat history in session state if not present
     if "messages" not in st.session_state:

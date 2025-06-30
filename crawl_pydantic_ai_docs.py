@@ -177,7 +177,7 @@ async def process_and_store_document(url: str, markdown: str):
     ]
     await asyncio.gather(*insert_tasks)
 
-async def crawl_parallel(urls: List[str], max_concurrent: int = 5):
+async def crawl_parallel(urls: List[str], max_concurrent: int = 1):
     """Crawl multiple URLs in parallel with a concurrency limit."""
     browser_config = BrowserConfig(
         headless=True,
@@ -214,13 +214,12 @@ async def crawl_parallel(urls: List[str], max_concurrent: int = 5):
 
 def get_pydantic_ai_docs_urls() -> List[str]:
     """Get URLs from Pydantic AI docs sitemap."""
-    sitemap_url = "https://ai.pydantic.dev/sitemap.xml"
     try:
-        response = requests.get(sitemap_url)
-        response.raise_for_status()
-        
+        with open("sitemap.xml", "r") as f:
+            xml_data = f.read()
+
         # Parse the XML
-        root = ElementTree.fromstring(response.content)
+        root = ElementTree.fromstring(xml_data)
         
         # Extract all URLs from the sitemap
         namespace = {'ns': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
