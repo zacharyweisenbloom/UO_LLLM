@@ -43,9 +43,6 @@ def crawl_uoregon(start_url="https://uoregon.edu", delay=0.0, max_pages=50000000
                 continue
     return visited
 
-
-
-
 def is_valid_url(url):
     parsed = urlparse(url)
     REPEATED_SEGMENT = re.compile(r'(?:^|/)([^/]+)/\1(/|$)')
@@ -64,6 +61,8 @@ def normalize_url(url):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Crawl University of Oregon website and save URLs.")
+
     print("Starting crawl...")
     urls = crawl_uoregon()
     print(f"Crawled {len(urls)} pages.")
