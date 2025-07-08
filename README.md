@@ -1,10 +1,11 @@
-# Pydantic AI: Documentation Crawler and RAG Agent
+# Much of this code was copied from this tutorial: https://www.youtube.com/watch?v=_R-ff4ZMLC8&t=2072s. Modifications where made too update project for our use case. 
+# UO LLLM 
 
-An intelligent documentation crawler and RAG (Retrieval-Augmented Generation) agent built using Pydantic AI and Supabase. The agent can crawl documentation websites, store content in a vector database, and provide intelligent answers to user questions by retrieving and analyzing relevant documentation chunks.
+An intelligent documentation crawler and RAG (Retrieval-Augmented Generation) agent built using Pydantic AI and Supabase. The agent can crawl websites, store content in a vector database, and provide intelligent answers to user questions by retrieving and analyzing relevant documentation chunks.
 
 ## Features
 
-- Documentation website crawling and chunking
+- website crawling and chunking
 - Vector database storage with Supabase
 - Semantic search using OpenAI embeddings
 - RAG-based question answering
