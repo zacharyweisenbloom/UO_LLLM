@@ -213,7 +213,6 @@ async def crawl_parallel(urls: List[str], max_concurrent: int = 1):
         await crawler.close()
 
 def get_pydantic_ai_docs_urls() -> List[str]:
-    """Get URLs from Pydantic AI docs sitemap."""
     try:
         with open("sitemap.xml", "r") as f:
             xml_data = f.read()
