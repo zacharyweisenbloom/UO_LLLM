@@ -34,7 +34,8 @@ base_url = "http://192.168.0.19:11434/v1"
 
 openai_client = OpenAIModel(
     model_name="tinyllama",  # or whatever model you've pulled in Ollama
-    provider=OpenAIProvider(base_url=base_url)
+    provider=OpenAIProvider(base_url=base_url),
+    stream=False
 )
 supabase: Client = Client(
     os.getenv("SUPABASE_URL"),
@@ -54,7 +55,7 @@ class ChatMessage(TypedDict):
 
 def display_message_part(part):
     """
-    Display a sigle part of a message in the Streamlit UI.
+    Display a sigle paru of a message in the Streamlit UI.
     Customize how you display system prompts, user prompts,
     tool calls, tool returns, etc.
     """
@@ -83,21 +84,15 @@ async def run_agent_with_streaming(user_input: str):
     )
 
     # Run the agent in a stream
-    async with pydantic_ai_expert.run_stream(
-        user_input,
-        deps=deps,
-        message_history= st.session_state.messages[:-1],  # pass entire conversation so far
-    ) as result:
-        # We'll gather partial text to show incrementally
+    result = await pydantic_ai_expert.run(
+    user_input,
+    deps=deps,
+    message_history=st.session_state.messages[:-1],
+    )
+        # Render partial text as it arrives
         partial_text = ""
         message_placeholder = st.empty()
-
-        # Render partial text as it arrives
-        async for chunk in result.stream_text(delta=True):
-            partial_text += chunk
-            message_placeholder.markdown(partial_text)
-
-        # Now that the stream is finished, we have a final result.
+               # Now that the stream is finished, we have a final result.
         # Add new messages from this run, excluding user-prompt messages
         filtered_messages = [msg for msg in result.new_messages() 
                             if not (hasattr(msg, 'parts') and 

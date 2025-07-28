@@ -131,6 +131,7 @@ async def list_documentation_pages(ctx: RunContext[PydanticAIDeps]) -> List[str]
         print(f"Error retrieving documentation pages: {e}")
         return []
 
+openai_client
 @pydantic_ai_expert.tool
 async def get_page_content(ctx: RunContext[PydanticAIDeps], url: str) -> str:
     """

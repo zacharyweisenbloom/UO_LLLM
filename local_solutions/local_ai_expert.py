@@ -19,7 +19,7 @@ load_dotenv()
 llm = os.getenv('LLM_MODEL', 'gpt-4o-mini')
 base_url = "http://192.168.0.19:11434/v1"
 model = OpenAIModel(
-    model_name="llama3.2:latest", provider=OpenAIProvider(base_url=base_url)
+    model_name="tinyllama", provider=OpenAIProvider(base_url=base_url)
 )
 
 logfire.configure(send_to_logfire='if-token-present')

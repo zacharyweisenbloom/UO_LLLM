@@ -3,25 +3,30 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse, urlunparse
 import time
 import re
-
+from collections import deque
 import argparse
+import hashlib
+from get_crawl_diff import compute_page_hash
 
 base_url = "https://uoregon.edu"
 
 def crawl_uoregon(start_url="https://uoregon.edu", delay=0.0, max_pages=5000000000000000):
     visited = set()
-    to_visit = [start_url]
+    to_visit = deque([start_url])   
+    request_headers = {"Accept": "text/html"}
+    session = requests.Session()
+    session.headers.update(request_headers)
     with open("uoregon_urls_test.xml", "w") as f:
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
         f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
         try:
             while to_visit and len(visited) < max_pages:
-                current_url = to_visit.pop()
+                current_url = to_visit.popleft()
                 if current_url in visited:
                         continue
                 try:
                     print(f"Crawling: {current_url}") 
-                    response = requests.get(current_url, timeout=2)
+                    response = session.get(current_url, timeout=10)
                     last_mod = response.headers.get("Last-Modified")
                     headers = response.headers
                     if response.status_code != 200:
@@ -29,9 +34,10 @@ def crawl_uoregon(start_url="https://uoregon.edu", delay=0.0, max_pages=50000000
                         continue
 
                     visited.add(current_url)
-                    f.write(f"  <url><loc>{current_url}</loc><lastmod>{last_mod}</lastmod></url>\n")
+                    page_hash = compute_page_hash(current_url)
+                    f.write(f"  <url><loc>{current_url}</loc><hash>{page_hash}</hash><lastmod>{last_mod}</lastmod></url>\n")
                     f.flush()
-                    soup = BeautifulSoup(response.content, 'html.parser')
+                    soup = BeautifulSoup(response.content, 'lxml')
                     for link in soup.find_all('a', href=True):
                         href = link['href']
                         full_url = urljoin(current_url, href)
@@ -83,7 +89,6 @@ def has_repeated_subpath(url):
         power[i+1] = (power[i] * BASE) % MOD
 
     seen = set()
-
     for length in range(1, n + 1):  # check all lengths
         for i in range(n - length + 1):
             j = i + length
