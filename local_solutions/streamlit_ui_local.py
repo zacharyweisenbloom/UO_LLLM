@@ -33,9 +33,8 @@ load_dotenv()
 base_url = "http://192.168.0.19:11434/v1"
 
 openai_client = OpenAIModel(
-    model_name="tinyllama",  # or whatever model you've pulled in Ollama
-    provider=OpenAIProvider(base_url=base_url),
-    stream=False
+    model_name="llama3.2",  
+    provider=OpenAIProvider(base_url=base_url)
 )
 supabase: Client = Client(
     os.getenv("SUPABASE_URL"),
@@ -82,29 +81,28 @@ async def run_agent_with_streaming(user_input: str):
     deps = PydanticAIDeps(
         supabase=supabase
     )
-
-    # Run the agent in a stream
     result = await pydantic_ai_expert.run(
     user_input,
     deps=deps,
     message_history=st.session_state.messages[:-1],
     )
-        # Render partial text as it arrives
-        partial_text = ""
-        message_placeholder = st.empty()
-               # Now that the stream is finished, we have a final result.
-        # Add new messages from this run, excluding user-prompt messages
-        filtered_messages = [msg for msg in result.new_messages() 
-                            if not (hasattr(msg, 'parts') and 
-                                    any(part.part_kind == 'user-prompt' for part in msg.parts))]
-        st.session_state.messages.extend(filtered_messages)
 
-        # Add the final response to the messages
-        st.session_state.messages.append(
-            ModelResponse(parts=[TextPart(content=partial_text)])
-        )
+    # Get the final output text
+    #final_text = result.output_text()
+    final_text = str(result.output) 
+    # Display the result
+    st.markdown(final_text)
 
+    # Store new messages (excluding user-prompt parts)
+    filtered_messages = [
+        msg for msg in result.new_messages()
+        if not (hasattr(msg, 'parts') and any(part.part_kind == 'user-prompt' for part in msg.parts))
+    ]
+    st.session_state.messages.extend(filtered_messages)
 
+    # Add the final response
+    st.session_state.messages.append(ModelResponse(parts=[TextPart(content=final_text)]))
+        
 async def main():
     st.title("UO Computer Science LLM Agent")
     st.write("Ask me questions about the University of Oregon Computer Science department!")
