@@ -16,7 +16,6 @@ import httpx
 from typing import List
 load_dotenv()
 
-llm = os.getenv('LLM_MODEL', 'gpt-4o-mini')
 base_url = "http://192.168.0.19:11434/v1"
 
 model = OpenAIModel(
@@ -180,14 +179,4 @@ async def get_page_content(ctx: RunContext[PydanticAIDeps], url: str) -> str:
         print(f"Error retrieving page content: {e}")
         return f"Error retrieving page content: {str(e)}"
 
-"""
-async def main():
 
-    embeddings = await get_embedding("this is some text")
-    print(embeddings)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
-
-"""

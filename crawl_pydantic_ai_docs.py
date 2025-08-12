@@ -75,7 +75,6 @@ def chunk_text(text: str, chunk_size: int = 5000) -> List[str]:
 
         # Move start position for next chunk
         start = max(start + 1, end)
-
     return chunks
 
 async def get_title_and_summary(chunk: str, url: str) -> Dict[str, str]:
@@ -150,7 +149,7 @@ async def insert_chunk(chunk: ProcessedChunk):
             "metadata": chunk.metadata,
             "embedding": chunk.embedding
         }
-        
+
         result = supabase.table("site_pages").insert(data).execute()
         print(f"Inserted chunk {chunk.chunk_number} for {chunk.url}")
         return result
@@ -232,6 +231,7 @@ def get_pydantic_ai_docs_urls() -> List[str]:
 async def main():
     # Get URLs from Pydantic AI docs
     urls = get_pydantic_ai_docs_urls()
+
     if not urls:
         print("No URLs found to crawl")
         return
