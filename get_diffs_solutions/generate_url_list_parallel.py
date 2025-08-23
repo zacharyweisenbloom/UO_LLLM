@@ -7,9 +7,36 @@ from queue import Queue
 import argparse
 import threading
 from html import escape
-from thread_solution import compute_page_hash
+import hashlib
 
 base_url = "https://uoregon.edu"
+BLOCKLIST_SUBSTRINGS = ["oregonnews.uoregon.edu/lccn"]
+
+output_file = "uoregon_urls.xml"
+def is_blocked_by_substrings(url: str) -> bool:
+    u = url.lower()
+    return any(s in u for s in BLOCKLIST_SUBSTRINGS)
+
+
+
+def compute_page_hash(content):
+
+    soup = BeautifulSoup(content, "lxml")
+    body = soup.body
+    for tag in body.find_all(["script", "style", "noscript", "iframe", "input", "form"]):
+        tag.decompose()
+
+    # Remove query params from all hrefs
+    for a in body.find_all("a", href=True):
+        a["href"] = a["href"].split("?")[0]
+
+    # Remove dynamically injected elements
+    for div in body.select(".be-ix-link-block"):
+        div.decompose()
+    clean_text = body.get_text(separator=" ", strip=True)
+    #page_hash = hashlib.sha256(clean_text.encode("utf-8")).hexdigest()    
+    page_hash = hashlib.sha256(soup.body.get_text().encode("utf-8")).hexdigest()    
+    return page_hash
 
 # Precompile once (faster + thread-safe to reuse)
 REPEATED_SEGMENT = re.compile(r'(?:^|/)([^/]+)/\1(?:/|$)')
@@ -79,7 +106,7 @@ def crawl_uoregon(start_url="https://uoregon.edu", delay=0.0, max_pages=5_000_00
             # If compute_page_hash refetches, you could replace it with a hash of resp.content
             # to avoid a second network call. Keeping your behavior for now:
             try:
-                page_hash = compute_page_hash(url)
+                page_hash = compute_page_hash(resp.content)
             except Exception as e:
                 print(f"compute_page_hash failed for {url}: {e}")
                 page_hash = ""
@@ -110,7 +137,7 @@ def crawl_uoregon(start_url="https://uoregon.edu", delay=0.0, max_pages=5_000_00
 
             q.task_done()
 
-    with open("uoregon_urls_test.xml", "w", encoding="utf-8") as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
         f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
 
@@ -140,7 +167,8 @@ def is_valid_url(url):
         and parsed.hostname != "pages.uoregon.edu"
         and not any(parsed.path.endswith(ext) for ext in [".pdf", ".xml", ".jpg", ".jpeg", ".png", ".gif"])
         and not REPEATED_SEGMENT.search(parsed.path)  # Avoid repeated single segments like /foo/bar/foo
-        and not has_repeated_subpath(url)            # Avoid repeated multi-segment subpaths
+        and not has_repeated_subpath(url)             # Avoid repeated multi-segment subpaths
+        and not is_blocked_by_substrings(url)
     )
 
 def normalize_url(url):
@@ -170,7 +198,6 @@ def has_repeated_subpath(url):
             if h in seen:
                 return True
             seen.add(h)
-
     return False
 
 def main():
