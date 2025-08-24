@@ -12,7 +12,7 @@ import hashlib
 base_url = "https://uoregon.edu"
 BLOCKLIST_SUBSTRINGS = ["oregonnews.uoregon.edu/lccn"]
 
-output_file = "uoregon_urls.xml"
+output_file = "uoregon_urls_with_oregonnews.xml"
 def is_blocked_by_substrings(url: str) -> bool:
     u = url.lower()
     return any(s in u for s in BLOCKLIST_SUBSTRINGS)
@@ -164,11 +164,11 @@ def is_valid_url(url):
         parsed.scheme in {"http", "https"}
         and parsed.hostname
         and parsed.hostname.endswith("uoregon.edu")
-        and parsed.hostname != "pages.uoregon.edu"
+        #and parsed.hostname != "pages.uoregon.edu"
         and not any(parsed.path.endswith(ext) for ext in [".pdf", ".xml", ".jpg", ".jpeg", ".png", ".gif"])
         and not REPEATED_SEGMENT.search(parsed.path)  # Avoid repeated single segments like /foo/bar/foo
         and not has_repeated_subpath(url)             # Avoid repeated multi-segment subpaths
-        and not is_blocked_by_substrings(url)
+        #and not is_blocked_by_substrings(url)
     )
 
 def normalize_url(url):
